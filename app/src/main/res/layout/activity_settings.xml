@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".SettingsActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/api_key"
+            android:textAppearance="?attr/textAppearanceHeadline6" />
+
+        <EditText
+            android:id="@+id/apiKeyEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:hint="0000000000"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@drawable/edit_text_background"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/refresh_interval"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:layout_marginTop="16dp" />
+
+        <Spinner
+            android:id="@+id/refreshIntervalSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:entries="@array/refresh_intervals"
+            android:layout_marginTop="8dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Prompts"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:layout_marginTop="16dp" />
+
+        <LinearLayout
+            android:id="@+id/dynamicEditTextContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp" />
+
+        <Button
+            android:id="@+id/addEditTextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/add_prompt"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/primary"
+            android:textColor="@android:color/white"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Width"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/widthEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Device Width"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@drawable/edit_text_background"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Height"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/heightEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="Device Height"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@drawable/edit_text_background"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Scale divisor"
+            android:textAppearance="?attr/textAppearanceHeadline6"
+            android:layout_marginTop="16dp" />
+
+        <EditText
+            android:id="@+id/scaleEditText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"
+            android:hint="1"
+            android:layout_marginTop="8dp"
+            android:padding="12dp"
+            android:background="@drawable/edit_text_background"/>
+
+        <Button
+            android:id="@+id/saveButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/primary"
+            android:textColor="@android:color/white"/>
+    </LinearLayout>
+
+
+</ScrollView>

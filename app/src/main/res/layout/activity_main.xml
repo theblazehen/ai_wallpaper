@@ -1,0 +1,43 @@
+<!-- Layout for MainActivity -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <Button
+        android:id="@+id/buttonOpenSettings"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Configure Wallpaper" />
+
+    <Button
+        android:id="@+id/setWallpaperButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Set Wallpaper"
+        android:layout_centerInParent="true"/>
+
+    <!-- Added Refresh Now button -->
+    <Button
+        android:id="@+id/refreshButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Refresh Now"
+        android:layout_marginTop="16dp"/>
+
+    <TextView
+        android:id="@+id/textViewStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Status: Idle"
+        android:paddingTop="16dp"/>
+
+    <TextView
+        android:id="@+id/textViewTimer"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Next Refresh: --:--"
+        android:paddingTop="8dp"/>
+</LinearLayout>

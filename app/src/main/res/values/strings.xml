@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">Stable Wallpaper</string>
+    <string name="app_description">Stable Wallpaper</string>
+    <string name="title_activity_settings">SettingsActivity</string>
+    <!-- Strings used for fragments for navigation -->
+    <string name="first_fragment_label">First Fragment</string>
+    <string name="second_fragment_label">Second Fragment</string>
+    <string name="next">Next</string>
+    <string name="previous">Previous</string>
+    <string name="save">Save</string>
+    <string name="choose_interval">Choose Refresh Interval</string>
+    <string name="api_key">API Key</string>
+    <string name="refresh_interval">Refresh Interval</string>
+    <string name="add_prompt">Add Prompt</string>
+
+</resources>
