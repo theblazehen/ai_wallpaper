@@ -52,16 +52,13 @@ class ImageDownloadWorker(
 
                 // Download and save the image to the database
                 val imageByteArray = downloadImage(imageUrl)
-                if (imageByteArray != null) {
+                /*if (imageByteArray != null) {
                     val imagePath = saveImageToFile(imageByteArray)
                     Log.i("ImagePath", imagePath.toString())
                     if (imagePath != null) {
                         saveImageToDatabase(imagePath, prompt)
                     }
-                }
-                val intent = Intent("dev.blazelight.aiwallpaper.ACTION_UPDATE_WALLPAPER")
-                applicationContext.sendBroadcast(intent)
-                Log.i("imagedownloadworker", "sent broadcast intent")
+                }*/
                 // Return success
                 return Result.success()
             }

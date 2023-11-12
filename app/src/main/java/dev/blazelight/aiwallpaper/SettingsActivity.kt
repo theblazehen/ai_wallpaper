@@ -13,6 +13,7 @@ class SettingsActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
+        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
 
         val spinner: Spinner = findViewById(R.id.refreshIntervalSpinner)
         val adapter = ArrayAdapter.createFromResource(this,
@@ -20,27 +21,24 @@ class SettingsActivity : Activity() {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinner.adapter = adapter
 
+        val parallaxCheckbox: CheckBox = findViewById(R.id.parallaxCheckbox)
+        val savedParallax = prefs.getBoolean("parallax", false) // default is false if not found
+        parallaxCheckbox.isChecked = savedParallax
+
+
         val apiKeyEditText: EditText = findViewById(R.id.apiKeyEditText)
         val dynamicEditTextContainer: LinearLayout = findViewById(R.id.dynamicEditTextContainer)
         val addEditTextButton: Button = findViewById(R.id.addEditTextButton)
         val saveButton: Button = findViewById(R.id.saveButton)
 
-
-        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
         val savedIntervalPosition = prefs.getInt("refreshIntervalPosition", 0)
         val savedApiKey = prefs.getString("apiKey", "0000000000")
         val savedPrompts = prefs.getStringSet("prompts", emptySet())
 
-        val widthEditText: EditText = findViewById(R.id.widthEditText)
-        val heightEditText: EditText = findViewById(R.id.heightEditText)
         val scaleEditText: EditText = findViewById(R.id.scaleEditText)
 
-        val savedWidth = prefs.getInt("width", calculateDeviceWidth())
-        val savedHeight = prefs.getInt("height", calculateDeviceHeight())
         val savedScale = prefs.getFloat("scale", 1f) // Default scale is 1 (no scaling)
 
-        widthEditText.setText(savedWidth.toString())
-        heightEditText.setText(savedHeight.toString())
         scaleEditText.setText(savedScale.toString())
 
         spinner.setSelection(savedIntervalPosition)
@@ -63,11 +61,8 @@ class SettingsActivity : Activity() {
             val editor = prefs.edit()
             editor.putString("apiKey", apiKeyEditText.text.toString())
 
-            val widthValue = widthEditText.text.toString().toIntOrNull() ?: calculateDeviceWidth()
-            val heightValue = heightEditText.text.toString().toIntOrNull() ?: calculateDeviceHeight()
-
-            editor.putInt("width", widthValue)
-            editor.putInt("height", heightValue)
+            // Save the parallax setting
+            editor.putBoolean("parallax", parallaxCheckbox.isChecked)
 
             val prompts = dynamicEditTextContainer.children.map {
                 val editText = it.findViewById<EditText>(R.id.promptEditText)
@@ -95,18 +90,6 @@ class SettingsActivity : Activity() {
         removeButton.setOnClickListener { container.removeView(promptRow) }
 
         container.addView(promptRow)
-    }
-
-    // Calculate the device width rounded up to the next multiple of 64
-    fun calculateDeviceWidth(): Int {
-        val screenWidth = resources.displayMetrics.widthPixels
-        return roundUpToNextMultipleOf64(screenWidth)
-    }
-
-    // Calculate the device height rounded up to the next multiple of 64
-    fun calculateDeviceHeight(): Int {
-        val screenHeight = resources.displayMetrics.heightPixels
-        return roundUpToNextMultipleOf64(screenHeight)
     }
 
 }

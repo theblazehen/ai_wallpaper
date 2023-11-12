@@ -43,6 +43,14 @@
             android:entries="@array/refresh_intervals"
             android:layout_marginTop="8dp"/>
 
+        <!-- Checkbox for Parallax -->
+        <CheckBox
+            android:id="@+id/parallaxCheckbox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/parallax"
+            android:layout_marginTop="16dp"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -66,39 +74,6 @@
             android:backgroundTint="@color/primary"
             android:textColor="@android:color/white"/>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Width"
-            android:textAppearance="?attr/textAppearanceHeadline6"
-            android:layout_marginTop="16dp" />
-
-        <EditText
-            android:id="@+id/widthEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="Device Width"
-            android:layout_marginTop="8dp"
-            android:padding="12dp"
-            android:background="@drawable/edit_text_background"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Height"
-            android:textAppearance="?attr/textAppearanceHeadline6"
-            android:layout_marginTop="16dp" />
-
-        <EditText
-            android:id="@+id/heightEditText"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="number"
-            android:hint="Device Height"
-            android:layout_marginTop="8dp"
-            android:padding="12dp"
-            android:background="@drawable/edit_text_background"/>
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
