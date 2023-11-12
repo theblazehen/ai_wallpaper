@@ -25,9 +25,17 @@ class WallpaperSetWorker(
         wallpaperManager = WallpaperManager.getInstance(applicationContext)
 
         Log.i("wallpapersetworker", "Try setting wallpaper")
-        try {
-            val wallpaper = imageLoader.getLatestWallpaper()
-            wallpaperManager.setBitmap(wallpaper)
+        // First, fetch the preference
+        val prefs = applicationContext.getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        val saveOrSet = prefs.getBoolean("saveOrSet", true)
+
+        if (!saveOrSet) {
+            try {
+                val wallpaper = imageLoader.getLatestWallpaper()
+                wallpaperManager.setBitmap(wallpaper)
+            } catch (e: Exception) {
+                return Result.failure()
+            }
         } catch (e: Exception) {
             return Result.failure()
         }

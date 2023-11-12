@@ -50,8 +50,15 @@ class ImageDownloadWorker(
                 val imageUrl = imageInfo.img
                 Log.i("imageUrl", imageUrl)
 
-                // Download and save the image to the database
-                val imageByteArray = downloadImage(imageUrl)
+                // First, fetch the preference
+                val prefs = applicationContext.getSharedPreferences("MyPrefs", MODE_PRIVATE)
+                val saveOrSet = prefs.getBoolean("saveOrSet", true)
+
+                if (saveOrSet) {
+                    // Download and save the image to the database
+                    val imageByteArray = downloadImage(imageUrl)
+                    ...
+                }
                 /*if (imageByteArray != null) {
                     val imagePath = saveImageToFile(imageByteArray)
                     Log.i("ImagePath", imagePath.toString())
