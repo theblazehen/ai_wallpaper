@@ -11,6 +11,10 @@ import androidx.work.workDataOf
 import androidx.work.*
 import java.util.UUID
 
+enum class WallpaperAction {
+    SAVE, SET
+}
+
 object WorkManagerHelper {
 
     private const val PREF_NAME = "MyPrefs"
@@ -25,7 +29,10 @@ object WorkManagerHelper {
 
         val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "parallax" to preferences.getBoolean("parallax", false))
         Log.i("Generation input data", generationInputData.toString())
-        val downloadInputData = workDataOf("prompt" to prompt)
+        val downloadInputData = workDataOf(
+            "prompt" to prompt,
+            "wallpaperAction" to (preferences.getString("wallpaperAction", "SET") ?: "SET")
+        )
 
         val imageGenerationRequest = createImageGenerationRequest(generationInputData, constraints)
         val imageStatusCheckRequest = createStatusCheckRequest(constraints)

@@ -64,7 +64,7 @@ class SettingsActivity : Activity() {
         saveButton.setOnClickListener {
             val editor = prefs.edit()
             editor.putString("apiKey", apiKeyEditText.text.toString())
-            editor.putBoolean("saveOrSet", switchSaveOrSet.isChecked)
+            editor.putString("wallpaperAction", if (switchSaveOrSet.isChecked) WallpaperAction.SAVE.name else WallpaperAction.SET.name)
 
             // Save the parallax setting
             editor.putBoolean("parallax", parallaxCheckbox.isChecked)
