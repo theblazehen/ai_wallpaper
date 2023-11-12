@@ -91,18 +91,16 @@
             android:padding="12dp"
             android:background="@drawable/edit_text_background"/>
 
-        <Switch
-            android:id="@+id/switchSaveOrSet"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/switch_save_or_set"
-            android:checked="true"
-            android:layout_marginTop="16dp"/>
 
         <Button
             android:id="@+id/saveButton"
-            ...
-        </Button>
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/save"
+            android:layout_marginTop="16dp"
+            android:backgroundTint="@color/primary"
+            android:textColor="@android:color/white"/>
+
     </LinearLayout>
 
 

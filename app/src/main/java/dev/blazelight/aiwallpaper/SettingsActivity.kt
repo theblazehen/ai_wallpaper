@@ -57,14 +57,10 @@ class SettingsActivity : Activity() {
             addPromptRow(dynamicEditTextContainer, "")
         }
 
-        val switchSaveOrSet: Switch = findViewById(R.id.switchSaveOrSet)
-        val savedSaveOrSet = prefs.getBoolean("saveOrSet", true) // default is true for save
-        switchSaveOrSet.isChecked = savedSaveOrSet
 
         saveButton.setOnClickListener {
             val editor = prefs.edit()
             editor.putString("apiKey", apiKeyEditText.text.toString())
-            editor.putBoolean("saveOrSet", switchSaveOrSet.isChecked)
 
             // Save the parallax setting
             editor.putBoolean("parallax", parallaxCheckbox.isChecked)

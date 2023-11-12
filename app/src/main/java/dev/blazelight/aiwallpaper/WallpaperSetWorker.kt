@@ -4,6 +4,7 @@ import HordeApiService
 import android.app.WallpaperManager
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -26,20 +27,11 @@ class WallpaperSetWorker(
         wallpaperManager = WallpaperManager.getInstance(applicationContext)
 
         Log.i("wallpapersetworker", "Try setting wallpaper")
-        // First, fetch the preference
-        val prefs = applicationContext.getSharedPreferences("MyPrefs", MODE_PRIVATE)
-        val saveOrSet = prefs.getBoolean("saveOrSet", true)
 
-        if (!saveOrSet) {
-            try {
-                val wallpaper = imageLoader.getLatestWallpaper()
-                wallpaperManager.setBitmap(wallpaper)
-            } catch (e: Exception) {
-                return Result.failure()
-            }
-        } else {
-            // later
-        }
+
+        val wallpaper = imageLoader.getLatestWallpaper()
+        wallpaperManager.setBitmap(wallpaper)
+
         return Result.success()
     }
 }
