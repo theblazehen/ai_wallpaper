@@ -1,27 +1,5 @@
 package dev.blazelight.aiwallpaper
 
-enum class WallpaperAction {
-    SET_DIRECTLY,
-    SAVE,
-    SAVE_AND_TRIGGER_MUZEI
-}
-
-class SettingsActivity : Activity() {
-    // Existing code...
-
-    private fun saveWallpaperAction(action: WallpaperAction) {
-        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-        prefs.edit().putString("wallpaperAction", action.name).apply()
-    }
-
-    private fun getWallpaperAction(): WallpaperAction {
-        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
-        val actionName = prefs.getString("wallpaperAction", WallpaperAction.SET_DIRECTLY.name) ?: WallpaperAction.SET_DIRECTLY.name
-        return WallpaperAction.valueOf(actionName)
-    }
-
-    // Rest of the existing code...
-
 import android.app.Activity
 import android.os.Bundle
 import android.view.LayoutInflater
