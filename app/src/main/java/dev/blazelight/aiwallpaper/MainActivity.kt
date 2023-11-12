@@ -11,6 +11,8 @@ import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.blazelight.aiwallpaper.viewmodel.WallpaperViewModel
@@ -57,6 +59,20 @@ class MainActivity : ComponentActivity() {
         findViewById<Button>(R.id.setWallpaperNowButton).setOnClickListener {
             setWallpaperNow()
         }
+
+        findViewById<Button>(R.id.refreshButtonScheduled).setOnClickListener {
+            refreshWallpaperScheduled()
+        }
+
+    }
+
+    private fun refreshWallpaperScheduled() {
+        // call ScheduledGenerationWorker from ScheduledGenerationWorker.kt
+        val workManager = WorkManager.getInstance(applicationContext)
+        val workRequest = OneTimeWorkRequestBuilder<ScheduledGenerationWorker>().build()
+
+        workManager.beginUniqueWork("ScheduledGenerationWorker", ExistingWorkPolicy.REPLACE, workRequest).enqueue()
+
     }
 
     private fun setWallpaperNow() {
@@ -103,24 +119,5 @@ class MainActivity : ComponentActivity() {
             .show()
     }
 
-    private fun calculateNextRefreshTime(): String {
-        val interval = getIntervalFromPreferences()
-        val nextRefreshTime = Calendar.getInstance().apply { add(Calendar.MINUTE, interval) }.time
-        return "Next Refresh: ${SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(nextRefreshTime)}"
-    }
 
-    private fun getIntervalFromPreferences(): Int {
-        val prefs = this.getSharedPreferences("MyPrefs", MODE_PRIVATE)
-        val intervalPosition = prefs.getInt("refreshIntervalPosition", 0)
-        return when (intervalPosition) {
-            0 -> 5
-            1 -> 30*60          // 30 minutes
-            2 -> 60*60          // 1 hour
-            3 -> 180*60         // 3 hours
-            4 -> 360*60         // 6 hours
-            5 -> 720*60         // 12 hours
-            6 -> 1440*60        // Daily (24 hours)
-            else -> 30*60       // Default to 30 minutes
-        }
-    }
 }

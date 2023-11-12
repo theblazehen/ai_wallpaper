@@ -18,16 +18,22 @@
             android:layout_height="wrap_content"
             android:text="@string/api_key"
             android:textAppearance="?attr/textAppearanceHeadline6" />
-
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:textColorHint="#B9B8B8"
+            app:passwordToggleEnabled="true">
         <EditText
             android:id="@+id/apiKeyEditText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:inputType="text"
+            android:inputType="textPassword"
+            app:passwordToggleEnabled="true"
             android:hint="0000000000"
             android:layout_marginTop="8dp"
             android:padding="12dp"
             android:background="@drawable/edit_text_background"/>
+        </com.google.android.material.textfield.TextInputLayout>
 
         <TextView
             android:layout_width="wrap_content"

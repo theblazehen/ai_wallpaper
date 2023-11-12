@@ -8,12 +8,14 @@ import android.widget.*
 import androidx.core.view.children
 import android.content.SharedPreferences
 
+
 class SettingsActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings)
         val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+        val utils = Utils()
 
         val spinner: Spinner = findViewById(R.id.refreshIntervalSpinner)
         val adapter = ArrayAdapter.createFromResource(this,
@@ -77,6 +79,8 @@ class SettingsActivity : Activity() {
 
             editor.putStringSet("prompts", prompts)
             editor.apply()
+
+            utils.startBackgroundWorker(this, prefs)
 
             finish()
         }

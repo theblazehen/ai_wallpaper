@@ -17,6 +17,7 @@ object WorkManagerHelper {
     private const val WORK_REQUEST_ID_KEY = "work_request_id"
     private const val WORK_NAME = "wallpaperGenerationWork"
 
+
     fun enqueueImageGenerationWork(context: Context, prompt: String, replaceExisting: Boolean) {
         val workManager = WorkManager.getInstance(context)
         val preferences = context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
