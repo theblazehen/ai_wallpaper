@@ -28,11 +28,9 @@ class WallpaperSetWorker(
         Log.i("wallpapersetworker", "Try setting wallpaper")
         // First, fetch the preference
         val prefs = applicationContext.getSharedPreferences("MyPrefs", MODE_PRIVATE)
-        val wallpaperAction = WallpaperAction.valueOf(
-            prefs.getString("wallpaperAction", WallpaperAction.SET.name) ?: WallpaperAction.SET.name
-        )
+        val saveOrSet = prefs.getBoolean("saveOrSet", true)
 
-        if (wallpaperAction == WallpaperAction.SET) {
+        if (!saveOrSet) {
             try {
                 val wallpaper = imageLoader.getLatestWallpaper()
                 wallpaperManager.setBitmap(wallpaper)
