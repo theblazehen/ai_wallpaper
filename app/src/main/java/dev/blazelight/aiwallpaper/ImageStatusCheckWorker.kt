@@ -41,7 +41,7 @@ class ImageStatusCheckWorker(
                     // Retry this worker based on the wait_time (in seconds) or after 20 seconds
                     val waitTime = responseBody.wait_time * 1000L // Convert to milliseconds
                     Log.i("WaitTime", waitTime.toString())
-                    delay(waitTime.coerceAtMost(20000)) // Wait for the specified time or at most 20 seconds
+                    delay(waitTime.coerceAtMost(20000).coerceAtLeast(2000))
                     return Result.retry()
                 }
             }

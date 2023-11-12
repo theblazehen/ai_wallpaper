@@ -1,5 +1,6 @@
 <resources>
     <string-array name="refresh_intervals">
+        <item>Continuous (DEV USAGE ONLY!!)</item>
         <item>30 minutes</item>
         <item>1 hour</item>
         <item>3 hours</item>

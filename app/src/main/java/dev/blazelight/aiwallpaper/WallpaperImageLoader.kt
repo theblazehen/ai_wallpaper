@@ -28,7 +28,7 @@ class WallpaperImageLoader(private val context: Context) {
         return@withContext convertImagePathToBitmap(wallpaperEntity?.imagePath)
     }
 
-    private fun convertImagePathToBitmap(imagePath: String?): Bitmap? {
+    fun convertImagePathToBitmap(imagePath: String?): Bitmap? {
         if (imagePath == null) {
             return null
         }

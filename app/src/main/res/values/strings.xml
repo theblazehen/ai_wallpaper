@@ -12,5 +12,6 @@
     <string name="api_key">API Key</string>
     <string name="refresh_interval">Refresh Interval</string>
     <string name="add_prompt">Add Prompt</string>
+    <string name="parallax">Parallax</string>
 
 </resources>

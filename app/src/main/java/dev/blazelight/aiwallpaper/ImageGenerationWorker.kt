@@ -5,7 +5,10 @@ import ImageGenerationRequest
 import ModelGenerationInputStable
 import android.content.Context
 import android.content.Context.MODE_PRIVATE
+import android.graphics.Point
 import android.util.Log
+import android.view.WindowManager
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -27,11 +30,17 @@ class ImageGenerationWorker(
         // Fetch the prompt from inputData
         val prompt = inputData.getString("prompt") ?: return Result.failure()
 
+        val windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+        val size = Point()
+        windowManager.defaultDisplay.getSize(size)
+        val height = size.y
+        var width = size.x.toDouble()
 
+        if (inputData.getBoolean("parallax", false)) {
+            width *= 1.3
+        }
 
         val scale = inputData.getFloat("scale", 0F)
-        val width = inputData.getInt("width", 0)
-        val height = inputData.getInt(("height"), 0)
 
         // Calculate the scaled width and height (ensure they are divisible by 64)
         val scaledWidth = roundUpToNextMultipleOf64((width / scale).toInt())

@@ -4,6 +4,7 @@ import android.app.AlertDialog
 import android.app.WallpaperManager
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -13,6 +14,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import dev.blazelight.aiwallpaper.viewmodel.WallpaperViewModel
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -20,6 +23,9 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var viewModel: WallpaperViewModel
     private lateinit var workManager: WorkManager
+    private lateinit var imageLoader: WallpaperImageLoader
+    private lateinit var wallpaperManager: WallpaperManager
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,11 +37,12 @@ class MainActivity : ComponentActivity() {
         // Initialize ViewModel
         viewModel = ViewModelProvider(this)[WallpaperViewModel::class.java]
 
+        imageLoader = WallpaperImageLoader(applicationContext)
+        wallpaperManager = WallpaperManager.getInstance(applicationContext)
+
         // Set up UI interactions
         setupUI()
 
-        // Observe WorkRequest status
-        observeWorkRequestStatus()
     }
 
     private fun setupUI() {
@@ -43,13 +50,30 @@ class MainActivity : ComponentActivity() {
             startActivity(Intent(this, SettingsActivity::class.java))
         }
 
-        findViewById<Button>(R.id.setWallpaperButton).setOnClickListener {
-            startActivity(Intent(WallpaperManager.ACTION_LIVE_WALLPAPER_CHOOSER))
-        }
-
         findViewById<Button>(R.id.refreshButton).setOnClickListener {
             refreshWallpaper()
         }
+
+        findViewById<Button>(R.id.setWallpaperNowButton).setOnClickListener {
+            setWallpaperNow()
+        }
+    }
+
+    private fun setWallpaperNow() {
+        Log.i("mainactivity", "called into setWallpaperNow")
+        Log.i("mainactivity", wallpaperManager.toString())
+        try {
+            Log.i("mainactivity", "start try load image as bitmap")
+            GlobalScope.launch {
+                val wallpaper = imageLoader.getLatestWallpaper()
+                Log.i("mainactivity", "loaded wallpaper")
+                wallpaperManager.setBitmap(wallpaper)
+                Log.i("mainactivity", "set wallpaper")
+            }
+        } catch (e: Exception) {
+            Log.e("mainactivity", e.toString())
+        }
+
     }
 
     private fun refreshWallpaper() {
@@ -79,37 +103,6 @@ class MainActivity : ComponentActivity() {
             .show()
     }
 
-    private fun observeWorkRequestStatus() {
-        val workRequestId = WorkManagerHelper.getWorkRequestId(this)
-
-        if (workRequestId != null) {
-            val workId = UUID.fromString(workRequestId)
-            workManager.getWorkInfoByIdLiveData(workId).observe(this, Observer { updateUI(it) })
-        }
-    }
-
-    private fun updateUI(workInfo: WorkInfo?) {
-        val statusTextView: TextView = findViewById(R.id.textViewStatus)
-        val timerTextView: TextView = findViewById(R.id.textViewTimer)
-
-        when (workInfo?.state) {
-            WorkInfo.State.RUNNING -> {
-                statusTextView.text = "Status: In Progress..."
-                timerTextView.text = "Next Refresh: Calculating..."
-            }
-            WorkInfo.State.SUCCEEDED -> {
-                statusTextView.text = "Status: Completed Successfully"
-                timerTextView.text = calculateNextRefreshTime()
-            }
-            WorkInfo.State.FAILED -> {
-                statusTextView.text = "Status: Failed"
-            }
-            else -> {
-                // Handle other cases if needed
-            }
-        }
-    }
-
     private fun calculateNextRefreshTime(): String {
         val interval = getIntervalFromPreferences()
         val nextRefreshTime = Calendar.getInstance().apply { add(Calendar.MINUTE, interval) }.time
@@ -120,13 +113,14 @@ class MainActivity : ComponentActivity() {
         val prefs = this.getSharedPreferences("MyPrefs", MODE_PRIVATE)
         val intervalPosition = prefs.getInt("refreshIntervalPosition", 0)
         return when (intervalPosition) {
-            0 -> 30          // 30 minutes
-            1 -> 60          // 1 hour
-            2 -> 180         // 3 hours
-            3 -> 360         // 6 hours
-            4 -> 720         // 12 hours
-            5 -> 1440        // Daily (24 hours)
-            else -> 30       // Default to 30 minutes
+            0 -> 5
+            1 -> 30*60          // 30 minutes
+            2 -> 60*60          // 1 hour
+            3 -> 180*60         // 3 hours
+            4 -> 360*60         // 6 hours
+            5 -> 720*60         // 12 hours
+            6 -> 1440*60        // Daily (24 hours)
+            else -> 30*60       // Default to 30 minutes
         }
     }
 }

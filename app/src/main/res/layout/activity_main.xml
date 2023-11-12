@@ -12,11 +12,12 @@
         android:layout_height="wrap_content"
         android:text="Configure Wallpaper" />
 
+
     <Button
-        android:id="@+id/setWallpaperButton"
+        android:id="@+id/setWallpaperNowButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Set Wallpaper"
+        android:text="Set Wallpaper Now"
         android:layout_centerInParent="true"/>
 
     <!-- Added Refresh Now button -->
@@ -27,17 +28,4 @@
         android:text="Refresh Now"
         android:layout_marginTop="16dp"/>
 
-    <TextView
-        android:id="@+id/textViewStatus"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Status: Idle"
-        android:paddingTop="16dp"/>
-
-    <TextView
-        android:id="@+id/textViewTimer"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Next Refresh: --:--"
-        android:paddingTop="8dp"/>
 </LinearLayout>

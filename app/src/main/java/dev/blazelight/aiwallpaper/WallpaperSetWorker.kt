@@ -3,6 +3,7 @@ package dev.blazelight.aiwallpaper
 import HordeApiService
 import android.app.WallpaperManager
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -38,8 +39,8 @@ class WallpaperSetWorker(
             } catch (e: Exception) {
                 return Result.failure()
             }
-        } catch (e: Exception) {
-            return Result.failure()
+        } else {
+            // later
         }
         return Result.success()
     }
