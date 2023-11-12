@@ -23,13 +23,14 @@ object WorkManagerHelper {
         Log.i("Prefs", preferences.toString())
         val constraints = getNetworkConstraints()
 
-        val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "width" to preferences.getInt("width", 0), "height" to preferences.getInt("height", 0))
+        val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "parallax" to preferences.getBoolean("parallax", false))
         Log.i("Generation input data", generationInputData.toString())
         val downloadInputData = workDataOf("prompt" to prompt)
 
         val imageGenerationRequest = createImageGenerationRequest(generationInputData, constraints)
         val imageStatusCheckRequest = createStatusCheckRequest(constraints)
         val imageDownloadRequest = createDownloadRequest(downloadInputData, constraints)
+        val wallpaperSetRequest = createWallpaperSetRequest(constraints)
 
         saveWorkRequestId(preferences, imageGenerationRequest.id)
         val existingWorkPolicy = if (replaceExisting) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP
@@ -42,12 +43,14 @@ object WorkManagerHelper {
             .beginUniqueWork(WORK_NAME, existingWorkPolicy, imageGenerationRequest)
             .then(imageStatusCheckRequest)
             .then(imageDownloadRequest)
+            .then(wallpaperSetRequest)
             .enqueue()
     }
 
 
         private fun getNetworkConstraints(): Constraints {
         return Constraints.Builder()
+            .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()
     }
 
@@ -60,6 +63,12 @@ object WorkManagerHelper {
 
     private fun createStatusCheckRequest(constraints: Constraints): OneTimeWorkRequest {
         return OneTimeWorkRequestBuilder<ImageStatusCheckWorker>()
+            .setConstraints(constraints)
+            .build()
+    }
+
+    private fun createWallpaperSetRequest(constraints: Constraints): OneTimeWorkRequest {
+        return OneTimeWorkRequestBuilder<WallpaperSetWorker>()
             .setConstraints(constraints)
             .build()
     }
