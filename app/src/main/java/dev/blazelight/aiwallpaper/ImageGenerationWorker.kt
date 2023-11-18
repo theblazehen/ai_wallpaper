@@ -19,9 +19,9 @@ import retrofit2.converter.gson.GsonConverterFactory
 import kotlin.random.Random
 
 // Function to round up a value to the next multiple of 64
-fun roundUpToNextMultipleOf64(value: Int): Int {
+/*fun roundUpToNextMultipleOf64(value: Int): Int {
     return ((value + 63) / 64) * 64
-}
+}*/
 
 class ImageGenerationWorker(
     appContext: Context,

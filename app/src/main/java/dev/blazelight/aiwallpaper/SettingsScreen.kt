@@ -58,7 +58,7 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
     var workMode by remember { mutableStateOf(prefs.getString("workMode", "Set wallpaper") ?: "Download only") }
     var workModes_expanded by remember { mutableStateOf(false) }
 
-    var scale by remember { mutableStateOf(prefs.getString("workMode", "Set wallpaper") ?: "Download only") }
+    var scale by remember { mutableStateOf(prefs.getFloat("scale", 1f).toString()) }
     var scaleFloat by remember { mutableStateOf(prefs.getFloat("scale", 1f)) }
     var parallax by remember { mutableStateOf(prefs.getBoolean("parallax", false)) }
     val models = listOf("stable_diffusion", "stable_diffusion_2.1")
@@ -107,6 +107,7 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
         with(prefs.edit()) {
             putString("apiKey", apiKey)
             putInt("keepImageCount", keepImageCount)
+            putString("workMode", workMode)
             putFloat("scale", scale.toFloatOrNull() ?: 1f)
             putBoolean("parallax", parallax)
             putStringSet("prompts", filteredPrompts)

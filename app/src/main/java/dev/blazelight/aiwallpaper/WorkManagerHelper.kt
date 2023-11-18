@@ -24,7 +24,7 @@ object WorkManagerHelper {
         Log.i("Prefs", preferences.toString())
         val constraints = getNetworkConstraints()
 
-        val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "parallax" to preferences.getBoolean("parallax", false), "model" to preferences.getString("model", "stable_diffusion"), "steps" to preferences.getInt("steps", 30))
+        val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "parallax" to preferences.getBoolean("parallax", false), "model" to preferences.getString("model", "stable_diffusion"), "steps" to preferences.getInt("steps", 30), "workMode" to preferences.getString("workMode", "Download only"))
         Log.i("Generation input data", generationInputData.toString())
         val downloadInputData = workDataOf("prompt" to prompt)
 
@@ -42,9 +42,6 @@ object WorkManagerHelper {
         // Enqueue workers in a chain
         workManager
             .beginUniqueWork(WORK_NAME, existingWorkPolicy, imageGenerationRequest)
-            .then(imageStatusCheckRequest)
-            .then(imageDownloadRequest)
-            .then(wallpaperSetRequest)
             .enqueue()
     }
 
@@ -56,7 +53,7 @@ object WorkManagerHelper {
     }
 
     private fun createImageGenerationRequest(inputData: Data, constraints: Constraints): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<ImageGenerationWorker>()
+        return OneTimeWorkRequestBuilder<promptProcessWorker>()
             .setInputData(inputData)
             .setConstraints(constraints)
             .build()
