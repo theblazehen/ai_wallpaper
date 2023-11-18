@@ -54,8 +54,11 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
     var apiKeyVisible by remember { mutableStateOf(false) }
 
     var keepImageCount by remember { mutableStateOf(prefs.getInt("keepImageCount", 0)) }
+    var workModes = listOf("Set wallpaper", "Download only", "Muzei")
+    var workMode by remember { mutableStateOf(prefs.getString("workMode", "Set wallpaper") ?: "Download only") }
+    var workModes_expanded by remember { mutableStateOf(false) }
 
-    var scale by remember { mutableStateOf(prefs.getFloat("scale", 1f).toString()) }
+    var scale by remember { mutableStateOf(prefs.getString("workMode", "Set wallpaper") ?: "Download only") }
     var scaleFloat by remember { mutableStateOf(prefs.getFloat("scale", 1f)) }
     var parallax by remember { mutableStateOf(prefs.getBoolean("parallax", false)) }
     val models = listOf("stable_diffusion", "stable_diffusion_2.1")
@@ -169,6 +172,49 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                         .fillMaxWidth()
                     //  .padding(top = 8.dp)
                 )
+                // Display the current selected model and a button to show the dropdown
+                ExposedDropdownMenuBox(
+                    expanded = workModes_expanded,
+                    onExpandedChange = {
+                        workModes_expanded = !workModes_expanded
+                    }
+                ) {
+                    // TextField acting as a dropdown trigger
+                    TextField(
+                        readOnly = true,
+                        value = workMode,
+                        onValueChange = { },
+                        label = { Text("Set work mode", color = colors.onSurface) },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(
+                                expanded = workModes_expanded
+                            )
+                        },
+
+                        colors = ExposedDropdownMenuDefaults.textFieldColors(
+                            textColor = colors.onSurface
+
+                        )
+                    )
+
+                    ExposedDropdownMenu(
+                        expanded = workModes_expanded,
+                        onDismissRequest = {
+                            workModes_expanded = false
+                        }
+                    ) {
+                        workModes.forEach { cur_mode ->
+                            DropdownMenuItem(
+                                onClick = {
+                                    workMode = cur_mode
+                                    workModes_expanded = false
+                                }
+                            ) {
+                                Text(text = cur_mode)
+                            }
+                        }
+                    }
+                }
 
 
                 Divider(
@@ -176,7 +222,6 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                     thickness = 1.dp,
                     modifier = Modifier.padding(top = 8.dp, bottom = 8.dp)
                 )
-
 
                 Text(
                     "Stable Horde",
