@@ -8,6 +8,7 @@ import android.content.Context.MODE_PRIVATE
 import android.graphics.Point
 import android.util.Log
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.core.content.ContextCompat.getSystemService
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -15,6 +16,7 @@ import androidx.work.workDataOf
 import kotlinx.coroutines.delay
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import kotlin.random.Random
 
 // Function to round up a value to the next multiple of 64
 fun roundUpToNextMultipleOf64(value: Int): Int {
@@ -41,6 +43,8 @@ class ImageGenerationWorker(
         }
 
         val scale = inputData.getFloat("scale", 0F)
+        val model = inputData.getString("model") ?: "stable_diffusion"
+        val steps = inputData.getInt("steps", 30) ?: 30
 
         // Calculate the scaled width and height (ensure they are divisible by 64)
         val scaledWidth = roundUpToNextMultipleOf64((width / scale).toInt())
@@ -61,7 +65,7 @@ class ImageGenerationWorker(
                 sampler_name = "k_lms",
                 cfg_scale = 7.5,
                 denoising_strength = 0.75,
-                seed = "",
+                seed = Random.nextInt().toString(),
                 height = scaledHeight,
                 width = scaledWidth,
                 seed_variation = 1000,
@@ -70,7 +74,7 @@ class ImageGenerationWorker(
                 tiling = false,
                 hires_fix = false,
                 clip_skip = 1,
-                steps = 30,
+                steps = steps,
                 n = 1
             ),
             nsfw = false,
@@ -79,8 +83,9 @@ class ImageGenerationWorker(
             censor_nsfw = false,
             workers = emptyList(),
             worker_blacklist = false,
-            models = listOf("stable_diffusion"),
+            models = listOf(model),
             r2 = true,
+            shared = true,
             dry_run = false
         )
 
@@ -88,6 +93,7 @@ class ImageGenerationWorker(
         try {
             val response = apiService.initiateImageGeneration(HordeApiService.getApiKey(applicationContext), request)
             Log.i("response", response.toString())
+            //Toast.makeText(applicationContext, "Generating image", Toast.LENGTH_SHORT).show()
             if (response.isSuccessful) {
                 val responseBody = response.body()
                 Log.i("ResponseBody", responseBody.toString())

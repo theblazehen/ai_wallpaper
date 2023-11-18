@@ -2,7 +2,9 @@ package dev.blazelight.aiwallpaper.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -10,38 +12,43 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFFBB86FC),     // A light purple
+    onPrimary = Color.Black,         // Black text on light purple
+    secondary = Color(0xFF03DAC5),   // A teal color
+    onSecondary = Color.Black,       // Black text on teal
+    tertiary = Color(0xFF03DAC6),    // A slightly different teal
+    onTertiary = Color.Black,        // Black text on tertiary color
+    background = Color(0xFF121212),  // Dark background
+    onBackground = Color.White,      // White text on dark background
+    surface = Color(0xFF121212),     // Dark surface
+    onSurface = Color.White,         // White text on dark surface
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primary = Color(0xFF6200EE),     // A deep purple
+    onPrimary = Color.White,         // White text on deep purple
+    secondary = Color(0xFF03DAC6),   // A teal color
+    onSecondary = Color.Black,       // Black text on teal
+    tertiary = Color(0xFF018786),    // A darker teal
+    onTertiary = Color.White,        // White text on darker teal
+    background = Color(0xFFFFFFFF),  // White background
+    onBackground = Color.Black,      // Black text on white background
+    surface = Color(0xFFFFFFFF),     // White surface
+    onSurface = Color.Black,         // Black text on white surface
 )
 
 @Composable
 fun StableWallpaperTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {
@@ -53,6 +60,7 @@ fun StableWallpaperTheme(
         darkTheme -> DarkColorScheme
         else -> LightColorScheme
     }
+    Log.i("colorscheme", colorScheme.toString())
     val view = LocalView.current
     if (!view.isInEditMode) {
         SideEffect {

@@ -24,7 +24,7 @@ object WorkManagerHelper {
         Log.i("Prefs", preferences.toString())
         val constraints = getNetworkConstraints()
 
-        val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "parallax" to preferences.getBoolean("parallax", false))
+        val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "parallax" to preferences.getBoolean("parallax", false), "model" to preferences.getString("model", "stable_diffusion"), "steps" to preferences.getInt("steps", 30))
         Log.i("Generation input data", generationInputData.toString())
         val downloadInputData = workDataOf("prompt" to prompt)
 

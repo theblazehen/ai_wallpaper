@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Context.MODE_PRIVATE
 import android.graphics.BitmapFactory
 import android.util.Log
+import android.widget.Toast
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import kotlinx.coroutines.delay
@@ -27,6 +28,7 @@ class WallpaperSetWorker(
         wallpaperManager = WallpaperManager.getInstance(applicationContext)
 
         Log.i("wallpapersetworker", "Try setting wallpaper")
+        //Toast.makeText(applicationContext, "Setting wallpaper", Toast.LENGTH_SHORT).show()
 
 
         val wallpaper = imageLoader.getLatestWallpaper()

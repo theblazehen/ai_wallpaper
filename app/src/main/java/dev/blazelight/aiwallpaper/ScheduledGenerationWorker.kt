@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
 import androidx.work.CoroutineWorker
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
@@ -29,12 +30,13 @@ class ScheduledGenerationWorker(
         try {
 
             Log.i("ScheduledGenerationWorker", "Generating wallpaper from scheduled work")
+            //Toast.makeText(applicationContext, "Generating wallpaper from scheduled work", Toast.LENGTH_SHORT).show()
 
             val prefs = applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE)
             val prompts = prefs.getStringSet("prompts", emptySet()) ?: emptySet()
             val chosenPrompt = prompts.random()
 
-           WorkManagerHelper.enqueueImageGenerationWork(applicationContext, chosenPrompt, false)
+           WorkManagerHelper.enqueueImageGenerationWork(applicationContext, chosenPrompt, true)
 
         } catch (e: Exception) {
             Log.e("ScheduledGenerationWorker", "Error generating wallpaper", e)

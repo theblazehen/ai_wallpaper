@@ -18,7 +18,8 @@ data class ImageGenerationRequest(
     val worker_blacklist: Boolean,
     val models: List<String>,
     val r2: Boolean,
-    val dry_run: Boolean
+    val dry_run: Boolean,
+    val shared: Boolean,
 )
 
 data class ModelGenerationInputStable(

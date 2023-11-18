@@ -3,8 +3,12 @@ package dev.blazelight.aiwallpaper
 import HordeApiService
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
+import android.net.Uri
 import android.os.Environment
 import android.util.Log
+import android.widget.Toast
+import androidx.documentfile.provider.DocumentFile
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
@@ -30,6 +34,7 @@ class ImageDownloadWorker(
         val prompt = inputData.getString("prompt") ?: return Result.failure()
 
         Log.i("InDownloadRequestId", requestId.toString())
+        //Toast.makeText(applicationContext, "Downloading image", Toast.LENGTH_SHORT).show()
 
         // Create the API service interface using Retrofit
         val apiService = Retrofit.Builder()
@@ -56,7 +61,7 @@ class ImageDownloadWorker(
                 val imageByteArray = downloadImage(imageUrl)
 
                 if (imageByteArray != null) {
-                    val imagePath = saveImageToFile(imageByteArray)
+                    val imagePath = saveImageToFile(imageByteArray, applicationContext.getSharedPreferences("MyPrefs", Context.MODE_PRIVATE))
                     Log.i("ImagePath", imagePath.toString())
                     if (imagePath != null) {
                         saveImageToDatabase(imagePath, prompt)
@@ -90,25 +95,36 @@ class ImageDownloadWorker(
             }
         }
     }
-    private suspend fun saveImageToFile(imageData: ByteArray): String? {
+    private suspend fun saveImageToFile(imageData: ByteArray, prefs: SharedPreferences): String? {
+        val context = applicationContext
         return withContext(Dispatchers.IO) {
             try {
-                val customDirectoryName = "wallpapers"
-                val fileDir = File(applicationContext.getExternalFilesDir(Environment.DIRECTORY_PICTURES), customDirectoryName)
+                // Retrieve the saved directory URI from SharedPreferences
+                val savedUriString = prefs.getString("selectedImageDirectoryUri", null)
+                val directoryUri = savedUriString?.let { Uri.parse(it) }
 
-                if (!fileDir.exists()) {
-                    fileDir.mkdirs() // Create the custom directory if it doesn't exist
+                if (directoryUri == null) {
+                    Log.e("SaveImage", "Directory URI is null")
+                    return@withContext null
                 }
 
-                val fileName = "wallpaper_${System.currentTimeMillis()}.jpg" // You can choose a different file format
-                val filePath = File(fileDir, fileName)
+                val directory = DocumentFile.fromTreeUri(context, directoryUri)
+                val fileName = "wallpaper_${System.currentTimeMillis()}.jpg" // File name with timestamp
 
-                FileOutputStream(filePath).use { outputStream ->
-                    outputStream.write(imageData)
-                    outputStream.flush()
+                // Create a new file in the selected directory
+                val file = directory?.createFile("image/jpeg", fileName)
+
+                file?.let {
+                    // Open an output stream to the new file's URI
+                    context.contentResolver.openOutputStream(it.uri)?.use { outputStream ->
+                        // Write the image data to the file
+                        outputStream.write(imageData)
+                        outputStream.flush()
+                    }
+                    return@withContext it.uri.toString() // Return the URI as a string
                 }
 
-                filePath.absolutePath
+                null // Return null if file creation failed
             } catch (e: Exception) {
                 e.printStackTrace()
                 null

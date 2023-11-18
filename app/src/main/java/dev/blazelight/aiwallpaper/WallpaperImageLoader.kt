@@ -7,6 +7,7 @@ import dev.blazelight.aiwallpaper.database.WallpaperDatabase
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import android.graphics.BitmapFactory
+import android.net.Uri
 
 class WallpaperImageLoader(private val context: Context) {
     private val wallpaperDatabase: WallpaperDatabase
@@ -24,20 +25,28 @@ class WallpaperImageLoader(private val context: Context) {
         // Perform the database query to get the latest wallpaper
         val wallpaperEntity = wallpaperDatabase.wallpaperDao().getLatestWallpaper()
 
-        // Convert the image path to a Bitmap (you'll need to implement this)
-        return@withContext convertImagePathToBitmap(wallpaperEntity?.imagePath)
+        // Convert the image path (String) to a Uri
+        val imageUri = wallpaperEntity.imagePath?.let { Uri.parse(it) }
+
+        // Convert the image Uri to a Bitmap
+        return@withContext convertImageUriToBitmap(context, imageUri)
     }
 
-    fun convertImagePathToBitmap(imagePath: String?): Bitmap? {
-        if (imagePath == null) {
+    private fun convertImageUriToBitmap(context: Context, imageUri: Uri?): Bitmap? {
+        if (imageUri == null) {
             return null
         }
 
         try {
-            // Decode the image file into a Bitmap
-            val options = BitmapFactory.Options()
-            options.inPreferredConfig = Bitmap.Config.ARGB_8888 // Adjust the config as needed
-            return BitmapFactory.decodeFile(imagePath, options)
+            // Get an InputStream from the Uri
+            context.contentResolver.openInputStream(imageUri).use { inputStream ->
+                if (inputStream == null) return null
+
+                // Decode the image file into a Bitmap
+                val options = BitmapFactory.Options()
+                options.inPreferredConfig = Bitmap.Config.ARGB_8888 // Adjust the config as needed
+                return BitmapFactory.decodeStream(inputStream, null, options)
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             return null
