@@ -188,10 +188,11 @@ class promptProcessWorker(
 
             val wallpaper = imageLoader.getLatestWallpaper()
             wallpaperManager.setBitmap(wallpaper)
+            return Result.success()
         }
 
         // If the request fails, return Result.retry() to retry later
-        return Result.success()
+        return Result.failure()
     }
 
     private suspend fun downloadImage(imageUrl: String): ByteArray? {

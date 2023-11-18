@@ -56,10 +56,6 @@ class MainActivity : ComponentActivity() {
             refreshWallpaper()
         }
 
-        findViewById<Button>(R.id.setWallpaperNowButton).setOnClickListener {
-            setWallpaperNow()
-        }
-
         findViewById<Button>(R.id.refreshButtonScheduled).setOnClickListener {
             refreshWallpaperScheduled()
         }
@@ -67,28 +63,10 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun refreshWallpaperScheduled() {
-        // call ScheduledGenerationWorker from ScheduledGenerationWorker.kt
         val workManager = WorkManager.getInstance(applicationContext)
-        val workRequest = OneTimeWorkRequestBuilder<ScheduledGenerationWorker>().build()
+        val workRequest = OneTimeWorkRequestBuilder<promptProcessWorker>().build()
 
         workManager.beginUniqueWork("ScheduledGenerationWorker", ExistingWorkPolicy.REPLACE, workRequest).enqueue()
-
-    }
-
-    private fun setWallpaperNow() {
-        Log.i("mainactivity", "called into setWallpaperNow")
-        Log.i("mainactivity", wallpaperManager.toString())
-        try {
-            Log.i("mainactivity", "start try load image as bitmap")
-            GlobalScope.launch {
-                val wallpaper = imageLoader.getLatestWallpaper()
-                Log.i("mainactivity", "loaded wallpaper")
-                wallpaperManager.setBitmap(wallpaper)
-                Log.i("mainactivity", "set wallpaper")
-            }
-        } catch (e: Exception) {
-            Log.e("mainactivity", e.toString())
-        }
 
     }
 

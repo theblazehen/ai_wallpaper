@@ -36,7 +36,7 @@ class Utils (){
     fun startBackgroundWorker(context: Context, sharedPreferences: SharedPreferences) {
         val interval = getIntervalFromPreferences(sharedPreferences) / 60
         val workManager = WorkManager.getInstance()
-        val periodicWorkRequest = PeriodicWorkRequestBuilder<ScheduledGenerationWorker>(15, TimeUnit.MINUTES)
+        val periodicWorkRequest = PeriodicWorkRequestBuilder<promptProcessWorker>(15, TimeUnit.MINUTES)
             .build()
 
         workManager.enqueueUniquePeriodicWork("ScheduledGenerationWorker", ExistingPeriodicWorkPolicy.REPLACE, periodicWorkRequest)

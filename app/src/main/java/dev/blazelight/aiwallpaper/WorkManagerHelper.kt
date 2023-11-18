@@ -26,12 +26,8 @@ object WorkManagerHelper {
 
         val generationInputData = workDataOf("prompt" to prompt, "scale" to preferences.getFloat("scale", 1f), "parallax" to preferences.getBoolean("parallax", false), "model" to preferences.getString("model", "stable_diffusion"), "steps" to preferences.getInt("steps", 30), "workMode" to preferences.getString("workMode", "Download only"))
         Log.i("Generation input data", generationInputData.toString())
-        val downloadInputData = workDataOf("prompt" to prompt)
 
         val imageGenerationRequest = createImageGenerationRequest(generationInputData, constraints)
-        val imageStatusCheckRequest = createStatusCheckRequest(constraints)
-        val imageDownloadRequest = createDownloadRequest(downloadInputData, constraints)
-        val wallpaperSetRequest = createWallpaperSetRequest(constraints)
 
         saveWorkRequestId(preferences, imageGenerationRequest.id)
         val existingWorkPolicy = if (replaceExisting) ExistingWorkPolicy.REPLACE else ExistingWorkPolicy.KEEP
@@ -59,24 +55,6 @@ object WorkManagerHelper {
             .build()
     }
 
-    private fun createStatusCheckRequest(constraints: Constraints): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<ImageStatusCheckWorker>()
-            .setConstraints(constraints)
-            .build()
-    }
-
-    private fun createWallpaperSetRequest(constraints: Constraints): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<WallpaperSetWorker>()
-            .setConstraints(constraints)
-            .build()
-    }
-
-    private fun createDownloadRequest(inputData: Data, constraints: Constraints): OneTimeWorkRequest {
-        return OneTimeWorkRequestBuilder<ImageDownloadWorker>()
-            .setInputData(inputData)
-            .setConstraints(constraints)
-            .build()
-    }
     private fun saveWorkRequestId(preferences: SharedPreferences, id: UUID) {
         preferences.edit().putString(WORK_REQUEST_ID_KEY, id.toString()).apply()
     }
