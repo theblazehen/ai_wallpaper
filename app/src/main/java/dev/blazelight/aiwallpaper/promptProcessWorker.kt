@@ -37,27 +37,24 @@ class promptProcessWorker(
     private lateinit var imageLoader: WallpaperImageLoader
     private lateinit var wallpaperManager: WallpaperManager
     override suspend fun doWork(): Result {
+
+        Log.i("promptProcessWorker", inputData.toString())
         // Fetch the prompt from inputData
         val prompt = inputData.getString("prompt") ?: return Result.failure()
 
-        val windowManager = applicationContext.getSystemService(Context.WINDOW_SERVICE) as WindowManager
-        val size = Point()
-        windowManager.defaultDisplay.getSize(size)
-        val height = size.y
-        var width = size.x.toDouble()
+        val width = inputData.getInt("width", 0)
+        val height = inputData.getInt("height", 0)
 
-        if (inputData.getBoolean("parallax", false)) {
-            width *= 1.3
-        }
-
-        val scale = inputData.getFloat("scale", 0F)
         val model = inputData.getString("model") ?: "stable_diffusion"
         val steps = inputData.getInt("steps", 30) ?: 30
 
-        // Calculate the scaled width and height (ensure they are divisible by 64)
-        val scaledWidth = roundUpToNextMultipleOf64((width / scale).toInt())
-        val scaledHeight = roundUpToNextMultipleOf64((height / scale).toInt())
+        val upscale = inputData.getBoolean("upscale", false)
 
+        var post_processing = if (upscale) {
+            listOf("RealESRGAN_x4plus")
+        } else {
+            emptyList<String>()
+        }
 
         // Create the API service interface using Retrofit
         val apiService = Retrofit.Builder()
@@ -74,10 +71,10 @@ class promptProcessWorker(
                 cfg_scale = 7.5,
                 denoising_strength = 0.75,
                 seed = Random.nextInt().toString(),
-                height = scaledHeight,
-                width = scaledWidth,
+                height = height,
+                width = width,
                 seed_variation = 1000,
-                post_processing = emptyList(),
+                post_processing = post_processing,
                 karras = true,
                 tiling = false,
                 hires_fix = false,
@@ -175,8 +172,7 @@ class promptProcessWorker(
         val workMode = inputData.getString("workMode") ?: "Download only"
         Log.i("workmode", workMode.toString())
         if (workMode == "Download only") {
-            Log.i("prompt process", "Returning success")
-            return Result.success()
+            Log.i("prompt process", "Download only, we're done")
         } else if (workMode == "Set wallpaper") {
             Log.i("Prompt process", "setting wallpaper")
             imageLoader = WallpaperImageLoader(applicationContext)
@@ -185,14 +181,33 @@ class promptProcessWorker(
             Log.i("wallpapersetworker", "Try setting wallpaper")
             //Toast.makeText(applicationContext, "Setting wallpaper", Toast.LENGTH_SHORT).show()
 
-
             val wallpaper = imageLoader.getLatestWallpaper()
             wallpaperManager.setBitmap(wallpaper)
-            return Result.success()
         }
 
-        // If the request fails, return Result.retry() to retry later
-        return Result.failure()
+        // Now delete old images if relevant
+        val keepImageCount = inputData.getInt("keepImageCount", 0)
+        val selectedImageDirectoryUri = inputData.getString("selectedImageDirectoryUri")
+        if (keepImageCount > 0) {
+            withContext(Dispatchers.IO) {
+                if (selectedImageDirectoryUri != null) {
+                    val directoryUri = Uri.parse(selectedImageDirectoryUri)
+                    val directory = DocumentFile.fromTreeUri(applicationContext, directoryUri)
+                    val files = directory?.listFiles()
+                    if (files != null) {
+                        val sortedFiles = files.sortedBy { it.lastModified() }
+                        if (sortedFiles.size > keepImageCount){
+                            val filesToDelete = sortedFiles.take(sortedFiles.size - keepImageCount)
+                            filesToDelete.forEach { it.delete() }
+                        }
+                    }
+                }
+
+            }
+        }
+
+        return Result.success()
+
     }
 
     private suspend fun downloadImage(imageUrl: String): ByteArray? {

@@ -36,6 +36,8 @@ class ScheduledGenerationWorker(
             val prompts = prefs.getStringSet("prompts", emptySet()) ?: emptySet()
             val chosenPrompt = prompts.random()
 
+            Log.i("ScheduledGenerationWorker", "Chosen prompt: $chosenPrompt")
+
            WorkManagerHelper.enqueueImageGenerationWork(applicationContext, chosenPrompt, true)
 
         } catch (e: Exception) {

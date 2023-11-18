@@ -3,7 +3,9 @@ package dev.blazelight.aiwallpaper.ui
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.graphics.Point
 import android.net.Uri
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,7 +14,9 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
@@ -43,6 +47,17 @@ private fun getReadableImageDirectoryName(prefs: SharedPreferences): String {
         }
     } ?: "Directory Not Selected"
 }
+fun roundUpToNextMultipleOf64(value: Int): Int {
+    return ((value + 63) / 64) * 64
+}
+
+private fun getDefaultResolution(context: Context): Pair<Int, Int> {
+    val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
+    val size = Point()
+    windowManager.defaultDisplay.getSize(size)
+
+    return Pair(roundUpToNextMultipleOf64(size.x / 2), roundUpToNextMultipleOf64(size.y / 2))
+}
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -50,18 +65,48 @@ private fun getReadableImageDirectoryName(prefs: SharedPreferences): String {
 fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
     val colors = MaterialTheme.colorScheme // Accessing the color scheme
 
-    var apiKey by remember { mutableStateOf(prefs.getString("apiKey", "0000000000") ?: "") }
+    var apiKey by remember { mutableStateOf(prefs.getString("apiKey", "0000000") ?: "00000000") }
     var apiKeyVisible by remember { mutableStateOf(false) }
 
-    var keepImageCount by remember { mutableStateOf(prefs.getInt("keepImageCount", 0)) }
+    var keepImageCount by remember { mutableStateOf(prefs.getInt("keepImageCount", 0).toString()) }
     var workModes = listOf("Set wallpaper", "Download only", "Muzei")
-    var workMode by remember { mutableStateOf(prefs.getString("workMode", "Set wallpaper") ?: "Download only") }
+    var workMode by remember {
+        mutableStateOf(
+            prefs.getString("workMode", "Set wallpaper") ?: "Download only"
+        )
+    }
     var workModes_expanded by remember { mutableStateOf(false) }
+
+    val refreshIntervalOptions = listOf(
+        Pair(15, "15 minutes"),
+        Pair(30, "30 minutes"),
+        Pair(60, "1 hour"),
+        Pair(120, "2 hours"),
+        Pair(180, "3 hours"),
+        Pair(360, "6 hours"),
+        // Add more pairs as needed
+    )
+    val defaultRefreshInterval = 30
+    var refreshInterval by remember {
+        mutableStateOf(
+            prefs.getInt(
+                "refreshInterval",
+                defaultRefreshInterval
+            )
+        )
+    }
+    var refreshMenuExpanded by remember { mutableStateOf(false) }
+
+    val (defaultWidth, defaultHeight) = getDefaultResolution(context)
 
     var scale by remember { mutableStateOf(prefs.getFloat("scale", 1f).toString()) }
     var scaleFloat by remember { mutableStateOf(prefs.getFloat("scale", 1f)) }
-    var parallax by remember { mutableStateOf(prefs.getBoolean("parallax", false)) }
-    val models = listOf("stable_diffusion", "stable_diffusion_2.1")
+
+    var width by remember { mutableStateOf(prefs.getInt("width", defaultWidth)) }
+    var height by remember { mutableStateOf(prefs.getInt("height", defaultHeight)) }
+
+    var upscale by remember { mutableStateOf(prefs.getBoolean("upscale", false)) }
+    val models = listOf("stable_diffusion", "stable_diffusion_2.1", "Anything Diffusion", "ICBINP - I Can't Believe It's Not Photography", "SDXL 1.0")
     var model by remember {
         mutableStateOf(
             prefs.getString("model", "stable_diffusion") ?: "stable_diffusion"
@@ -106,13 +151,16 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
 
         with(prefs.edit()) {
             putString("apiKey", apiKey)
-            putInt("keepImageCount", keepImageCount)
+            putInt("keepImageCount", keepImageCount.toInt())
             putString("workMode", workMode)
             putFloat("scale", scale.toFloatOrNull() ?: 1f)
-            putBoolean("parallax", parallax)
+            putInt("width", width)
+            putInt("height", height)
+            putBoolean("upscale", upscale)
             putStringSet("prompts", filteredPrompts)
             putInt("steps", steps)
             putString("model", model)
+            putInt("refreshInterval", refreshInterval)
             apply()
         }
         utils.startBackgroundWorker(context, prefs) // Pass necessary arguments
@@ -166,8 +214,10 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                     Text(buttonText)
                 }
                 OutlinedTextField(
-                    value = keepImageCount.toString(),
-                    onValueChange = { keepImageCount = it.toInt() },
+                    value = keepImageCount,
+                    onValueChange = {
+                        keepImageCount = it
+                    },
                     label = { Text("Keep image count (0 for infinite)") },
                     modifier = Modifier
                         .fillMaxWidth()
@@ -187,11 +237,13 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                         onValueChange = { },
                         label = { Text("Set work mode", color = colors.onSurface) },
                         trailingIcon = {
-                            ExposedDropdownMenuDefaults.TrailingIcon(
-                                expanded = workModes_expanded
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                "Dropdown Arrow",
+                                tint = colors.onSurface
                             )
                         },
-
+                        modifier = Modifier.fillMaxWidth(),
                         colors = ExposedDropdownMenuDefaults.textFieldColors(
                             textColor = colors.onSurface
 
@@ -212,6 +264,45 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                                 }
                             ) {
                                 Text(text = cur_mode)
+                            }
+                        }
+                    }
+                }
+                ExposedDropdownMenuBox(
+                    expanded = refreshMenuExpanded,
+                    onExpandedChange = {
+                        refreshMenuExpanded = !refreshMenuExpanded
+                    }
+
+                ) {
+                    TextField(
+                        readOnly = true,
+                        value = refreshIntervalOptions.first { it.first == refreshInterval }.second,
+                        onValueChange = { },
+                        label = { Text("Refresh Interval", color = colors.onSurface) },
+                        trailingIcon = {
+                            Icon(
+                                Icons.Filled.ArrowDropDown,
+                                "Dropdown Arrow",
+                                tint = colors.onSurface
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ExposedDropdownMenuDefaults.textFieldColors(
+                            textColor = colors.onSurface
+
+                        )
+                    )
+                    ExposedDropdownMenu(
+                        expanded = refreshMenuExpanded,
+                        onDismissRequest = { refreshMenuExpanded = false }
+                    ) {
+                        refreshIntervalOptions.forEach { (value, label) ->
+                            DropdownMenuItem(onClick = {
+                                refreshInterval = value
+                                refreshMenuExpanded = false
+                            }) {
+                                Text(label)
                             }
                         }
                     }
@@ -240,7 +331,11 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                         val description = if (apiKeyVisible) "Hide API Key" else "Show API Key"
 
                         IconButton(onClick = { apiKeyVisible = !apiKeyVisible }) {
-                            Icon(imageVector = image, contentDescription = description, tint = colors.onSurface)
+                            Icon(
+                                imageVector = image,
+                                contentDescription = description,
+                                tint = colors.onSurface
+                            )
                         }
                     },
                     modifier = Modifier
@@ -258,7 +353,7 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                     style = MaterialTheme.typography.headlineMedium,
                     color = colors.onSurface
                 )
-                Text(
+                /*Text(
                     "Scale Divisor: ${scale.format(1)}",
                     style = MaterialTheme.typography.bodyLarge,
                     color = colors.onSurface
@@ -278,18 +373,58 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                         scale = scaleFloat.toString()
                     },
                     //modifier = Modifier.padding(top = 8.dp)
+                )*/
+                Text(
+                    "Resolution (default half native)",
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.onSurface
                 )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    OutlinedTextField(
+                        value = width.toString(),
+                        onValueChange = { width = roundUpToNextMultipleOf64(it.toIntOrNull() ?: 0) },
+                        label = { Text("Width") },
+                        modifier = Modifier
+                            .weight(1f)
+                        //  .padding(top = 8.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = height.toString(),
+                        onValueChange = { height = roundUpToNextMultipleOf64(it.toIntOrNull() ?: 0) },
+                        label = { Text("Height") },
+                        modifier = Modifier
+                            .weight(1f)
+                        //  .padding(top = 8.dp)
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    // Button to reset to default resolution
+                    IconButton(onClick = {
+                        width = defaultWidth
+                        height = defaultHeight
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.Refresh,
+                            contentDescription = "Reset",
+                            tint = colors.onSurface
+                        )
+                    }
+
+
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     //modifier = Modifier.padding(all = 8.dp) // Adjust padding as needed
                 ) {
                     Checkbox(
-                        checked = parallax,
-                        onCheckedChange = { parallax = it }
+                        checked = upscale,
+                        onCheckedChange = { upscale = it }
                     )
                     Spacer(Modifier.width(8.dp)) // Space between checkbox and text
                     Text(
-                        "Parallax",
+                        "Upscale",
                         style = MaterialTheme.typography.bodyLarge,
                         color = colors.onSurface
                     )
@@ -390,9 +525,6 @@ fun SettingsScreen(context: Context, prefs: SharedPreferences, utils: Utils) {
                         }
                     )
                 }
-
-                Text("Refresh Interval", style = MaterialTheme.typography.headlineSmall)
-                // Implement the Spinner (Dropdown Menu) logic here
 
             }
         }

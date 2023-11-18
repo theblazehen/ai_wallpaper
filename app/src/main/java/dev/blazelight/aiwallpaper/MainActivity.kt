@@ -2,24 +2,44 @@ package dev.blazelight.aiwallpaper
 
 import android.app.AlertDialog
 import android.app.WallpaperManager
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Button
+
+import androidx.compose.material3.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dev.blazelight.aiwallpaper.viewmodel.WallpaperViewModel
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import dev.blazelight.aiwallpaper.Utils
 
 class MainActivity : ComponentActivity() {
 
@@ -27,75 +47,104 @@ class MainActivity : ComponentActivity() {
     private lateinit var workManager: WorkManager
     private lateinit var imageLoader: WallpaperImageLoader
     private lateinit var wallpaperManager: WallpaperManager
-
+    private lateinit var utils: Utils
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        utils = Utils()
+        setContent {
+            MyApp()
+        }
 
-        // Initialize WorkManager
+        // Initialize WorkManager, ViewModel, etc.
         workManager = WorkManager.getInstance(this)
-
-        // Initialize ViewModel
         viewModel = ViewModelProvider(this)[WallpaperViewModel::class.java]
-
         imageLoader = WallpaperImageLoader(applicationContext)
         wallpaperManager = WallpaperManager.getInstance(applicationContext)
-
-        // Set up UI interactions
-        setupUI()
-
     }
 
-    private fun setupUI() {
-        findViewById<Button>(R.id.buttonOpenSettings).setOnClickListener {
-            startActivity(Intent(this, SettingsActivity::class.java))
+    @Composable
+    fun MyApp() {
+        MaterialTheme {
+            MainContent()
         }
-
-        findViewById<Button>(R.id.refreshButton).setOnClickListener {
-            refreshWallpaper()
-        }
-
-        findViewById<Button>(R.id.refreshButtonScheduled).setOnClickListener {
-            refreshWallpaperScheduled()
-        }
-
     }
 
-    private fun refreshWallpaperScheduled() {
-        val workManager = WorkManager.getInstance(applicationContext)
-        val workRequest = OneTimeWorkRequestBuilder<promptProcessWorker>().build()
+    @Composable
+    fun MainContent() {
+        val context = LocalContext.current
+        var (showDialog, setShowDialog) = remember { mutableStateOf(false) }
+        val prompts = getPromptsFromPreferences(context)
 
-        workManager.beginUniqueWork("ScheduledGenerationWorker", ExistingWorkPolicy.REPLACE, workRequest).enqueue()
+        Log.i("MainActivity", "Prompts: $prompts")
 
-    }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Button(onClick = {
+                context.startActivity(Intent(context, SettingsActivity::class.java))
+            }) {
+                Text("Configure Wallpaper")
+            }
 
-    private fun refreshWallpaper() {
-        val prompts = getPromptsFromPreferences()
+            Spacer(modifier = Modifier.height(16.dp))
 
-        if (prompts.isEmpty()) {
-            Toast.makeText(this, "No prompts available", Toast.LENGTH_SHORT).show()
-            return
+            Button(onClick = {
+                if (prompts.isEmpty()) {
+                    Toast.makeText(context, "No prompts available", Toast.LENGTH_SHORT).show()
+                } else {
+                    setShowDialog(true)
+                }
+            }) {
+                Text("Refresh Now with specific prompt")
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(onClick = {
+                utils.startBackgroundWorker(context, context.getSharedPreferences("MyPrefs", MODE_PRIVATE))
+            }) {
+                Text("Refresh Now with random prompt")
+            }
         }
 
-        showPromptSelectionDialog(prompts)
+        if (showDialog) {
+            ShowPromptSelectionDialog(
+                prompts = prompts,
+                onDismiss = { showDialog = false },
+                onSelect = { selectedPrompt ->
+                    // Handle the selected prompt
+                    setShowDialog(false)
+                    WorkManagerHelper.enqueueImageGenerationWork(context, selectedPrompt, true)
+                }
+            )
+        }
     }
 
-    private fun getPromptsFromPreferences(): List<String> {
-        val prefs = getSharedPreferences("MyPrefs", MODE_PRIVATE)
+    @Composable
+    fun ShowPromptSelectionDialog(prompts: List<String>, onDismiss: () -> Unit, onSelect: (String) -> Unit) {
+        val context = LocalContext.current
+        if (prompts.isNotEmpty()) {
+            MaterialAlertDialogBuilder(context)
+                .setTitle("Choose a Prompt")
+                .setItems(prompts.toTypedArray()) { _, which ->
+                    val selectedPrompt = prompts[which]
+                    onSelect(selectedPrompt)
+                }
+                .setNegativeButton("Cancel") { dialog, _ ->
+                    dialog.dismiss()
+                    onDismiss()
+                }
+                .show()
+        }
+    }
+
+    private fun getPromptsFromPreferences(context: Context): List<String> {
+        val prefs = context.getSharedPreferences("MyPrefs", MODE_PRIVATE)
         return prefs.getStringSet("prompts", emptySet())?.toList() ?: listOf()
     }
-
-    private fun showPromptSelectionDialog(prompts: List<String>) {
-        AlertDialog.Builder(this)
-            .setTitle("Choose a Prompt")
-            .setItems(prompts.toTypedArray()) { _, which ->
-                val selectedPrompt = prompts[which]
-                WorkManagerHelper.enqueueImageGenerationWork(this, selectedPrompt, true)
-            }
-            .setNegativeButton("Cancel", null)
-            .show()
-    }
-
-
 }
